@@ -7,26 +7,34 @@ client_secret = process.env.client_secret;
 access_token = process.env.access_token;
 refresh_token = process.env.refresh_token;
 expires = process.env.expires_at;
-let strava;
 
 const checker = require("./token");
-const stravadata = require("./clubactivities");
+const bravoactivities = require("./clubactivities");
 
-function settingStravaCredentials() {
-  console.log("settingStravaCredentials");
-  // console.log("settingStravaCredentials");
+async function settingStravaCredentials() {
   stravaApi.config({
     access_token: access_token,
     client_id: client_id,
     client_secret: client_secret,
   });
   this.strava = new stravaApi.client(access_token);
-  //   this.strava.clubs
-  //     .listActivities({ id: 962767 }, (palyoad) => {
-  //       console.log(palyoad);
-  //     })
-  //     .then((data) => console.log(data));
-  stravadata.getClubActivities(this.strava);
+
+  //get Bravo Club Activities from strava
+  let bravodata = await bravoactivities.getClubActivities(this.strava);
+
+  let issues;
+  let noissues;
+  //then process all the activities
+  records = await bravoactivities
+    .activitiesProcesser(bravodata)
+    .then((data) => {
+      issues = data.allerrors;
+      noissues = data.allsaved;
+    });
+
+  //check which has been saved properly and errors
+  // console.log(noissues);
+  // console.log(issues);
 }
 
 //Check token first before anything else.
@@ -40,11 +48,9 @@ checker
   })
   //if it is not valid, refresh:
   .catch((err) => checker.refreshToken())
-  //then if refresh token successfully, set credentials
+  // if refreshed successfully, set credentials
   .then((data) => {
-    console.log("token has been refreshed"),
-      //   console.log(data),
-      settingStravaCredentials(data);
+    console.log("token has been refreshed"), settingStravaCredentials(data);
   })
   //refresh token failed
   .catch((err) => {
