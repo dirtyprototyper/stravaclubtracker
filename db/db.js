@@ -32,8 +32,8 @@ module.exports = {
   async addactivity(name, dist, t) {
     individual = await db.Activity.create({
       alias: name,
-      distance: dist,
-      activitytime: t,
+      distance: dist / 1000, //keeping it in km
+      activitytime: t, //seconds
     })
       .then((item) => {
         return item;
@@ -50,6 +50,36 @@ module.exports = {
 
     //returning error or result. Do not use catching on the other end
     return individual;
+  },
+
+  //collating the points
+  async addpoints(name, awardedpoints) {
+    test = await db.Members.findByPk(name).then((item) => {
+      if (item.dataValues.points != null) {
+        return item.dataValues.points;
+      } else {
+        return null;
+      }
+    });
+
+    //no record.
+    if (test == null) {
+      await db.Members.update(
+        { points: awardedpoints }, //km
+        { where: { alias: name } }
+      ).catch((e) => {
+        logger.error(e.original);
+      });
+    }
+    //have existing records for points
+    else if (test != null) {
+      await db.Members.update(
+        { points: awardedpoints + test },
+        { where: { alias: name }, returning: true, plain: true }
+      ).catch((e) => {
+        logger.error(e.original);
+      });
+    }
   },
 };
 

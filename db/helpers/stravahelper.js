@@ -1,6 +1,6 @@
 //methods for strava activities
 
-const addtodb = require("./db/db");
+const addtodb = require("../db");
 
 module.exports = {
   async getClubActivities(strava) {
@@ -15,7 +15,13 @@ module.exports = {
 
     //return all activities
     await strava.clubs.listActivities(opts).then((data) => {
-      thedata = data.splice(0, 24);
+      thedata = data.splice(0, 27);
+
+      //to do:
+      //refer to test.js for filtering of activiies
+
+      console.log("all club data");
+      console.log(thedata);
     });
     return thedata;
   },
@@ -26,7 +32,7 @@ module.exports = {
     const allsaved = [];
 
     for (const element of data) {
-      let distance = element.distance / 1000;
+      let distance = element.distance;
       let name = element.athlete.firstname + element.athlete.lastname;
       let time = element.moving_time;
 

@@ -9,7 +9,9 @@ refresh_token = process.env.refresh_token;
 expires = process.env.expires_at;
 
 const checker = require("./token");
-const bravoactivities = require("./clubactivities");
+const stravahelper = require("./db/helpers/stravahelper");
+const dbhelper = require("./db/helpers/dbhelper");
+const logger = require("./logger/logger");
 
 async function settingStravaCredentials() {
   stravaApi.config({
@@ -20,21 +22,33 @@ async function settingStravaCredentials() {
   this.strava = new stravaApi.client(access_token);
 
   //get Bravo Club Activities from strava
-  let bravodata = await bravoactivities.getClubActivities(this.strava);
+  let bravodata = await stravahelper.getClubActivities(this.strava);
 
   let issues;
   let noissues;
-  //then process all the activities
-  records = await bravoactivities
-    .activitiesProcesser(bravodata)
-    .then((data) => {
-      issues = data.allerrors;
-      noissues = data.allsaved;
-    });
+
+  //Normal process of all the activities
+  records = await stravahelper.activitiesProcesser(bravodata).then((data) => {
+    issues = data.allerrors;
+    noissues = data.allsaved;
+  });
 
   //check which has been saved properly and errors
-  // console.log(noissues);
+  // console.log(noissues[0].dataValues);
   // console.log(issues);
+
+  //pass in all those without issues to add points
+  if (noissues[0] != null) {
+    //check if they have points
+
+    //add for normal distance
+    dbhelper.pointsProcesser(noissues);
+
+    //update
+  } else if (noissues[0] == null) {
+    logger.debug(issues);
+    return issues;
+  }
 }
 
 //Check token first before anything else.

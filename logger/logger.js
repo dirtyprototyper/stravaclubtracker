@@ -4,10 +4,13 @@ var winston = require("winston");
 const logger = createLogger({
   format: format.combine(format.timestamp(), format.json()),
   transports: [
-    new transports.File({ filename: "logs/error/error.log", level: "error" }),
+    new transports.File({
+      filename: "logger/logs/error/error.log",
+      level: "error",
+    }),
 
     new transports.File({
-      filename: "logs/info/info.log",
+      filename: "logger/logs/info/info.log",
       level: "info",
     }),
   ],

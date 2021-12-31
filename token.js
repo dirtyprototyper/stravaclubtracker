@@ -8,7 +8,7 @@ module.exports = {
       tokenValidity = Math.floor(new Date() / 1000);
       console.log(tokenValidity);
       console.log(expires);
-      0;
+
       //if not expired
       if (expires > tokenValidity) {
         // console.log("havent expire");
@@ -35,7 +35,7 @@ module.exports = {
         refresh_token: refresh_token,
       })
       .then(function (response) {
-        // console.log("response");
+        console.log("token and then expiry");
         console.log(response.data.access_token);
         //Resetting the variable. these tokens are temporary use so i need not watch
         expires = response.data.expires_at;
